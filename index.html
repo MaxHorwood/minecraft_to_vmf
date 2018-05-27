@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset=utf-8>
+		<title>My first three.js app</title>
+		<style>
+			body { margin: 0;  }
+			canvas { width: 100%; height: 100% }
+		</style>
+	</head>
+	<body>
+        <input type="file" id="myFile" multiple size="50" onchange="myFunction()">
+        <input type="button" id="myButton" onclick="yOffUpdate(1)">
+        <canvas id="myCanvas"></canvas>
+        <canvas id="myCanvas1"></canvas>
+        <script src="https://threejs.org/build/three.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        
+        <!-- Scripts for handling mincraft data -->
+
+        <script src="js/util.js"></script>
+        <script src="js/inflate.js"></script>
+        <script src="js/deflate.js"></script>
+        <script src="js/Chunk.js"></script>
+        <script src="js/DataReader.js"></script>
+        <script src="js/Region.js"></script>
+        
+
+        <script src="js/nbt.js"></script>
+        <script>
+
+            var block_mat_data = [
+                [],
+                [loadMat('stone.png'), 'ardite', 'something'], 
+                [loadMat('grass_side.png')], 
+                [loadMat('dirt.png'), 'second', 'thrid'],
+                [loadMat('cobblestone.png')]];
+
+            function loadMat(loc) {
+                var mat = new THREE.TextureLoader().load('blocks/'+loc);
+			    mat.magFilter = THREE.NearestFilter;
+			    mat.minFilter = THREE.LinearMipMapLinearFilter;
+
+                return mat;
+            }
+
+            var yOff = 0;
+            var xOff = 0;
+            var zOff = 0;
+            var region_data = null;
+            var section = 0;
+            var section_g = 0;
+
+			var scene = new THREE.Scene();
+			var camera = new THREE.PerspectiveCamera( 90, window.innerWidth/window.innerHeight, 3, 1000 );
+            var controls = new THREE.OrbitControls( camera );
+			
+			var camera1 = new THREE.OrthographicCamera(-15, 15, 15, -15, 0.1, 1000);
+            var cameraHelper = new THREE.CameraHelper(camera1);
+			
+			
+            // Creates canvas that displays the content
+			var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas')});
+            var renderer1 = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas1')});
+            renderer.setClearColor(0x004440);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer1.setClearColor(0x004440);
+            renderer1.setSize(window.innerHeight, window.innerHeight);
+            var light = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(light);
+
+            var light1 = new THREE.PointLight(0xffffff, 0.5);
+            scene.add(light1);
+            scene.add(cameraHelper);
+            var offestX = 10;
+            var geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
+			var mat = new THREE.TextureLoader().load('blocks/grass_side_snowed.png');
+			mat.magFilter = THREE.NearestFilter;
+			mat.minFilter = THREE.LinearMipMapLinearFilter;
+            /*for (var i = 0; i < 16; i++){
+                for (var x = 0; x < 16; x++){
+                    for (var y = 0; y < 4; y++){
+                        //var object = new THREE.Mesh( geometry, new THREE.MeshLa	mbertMaterial( { color: Math.random() * 0xffffff } ) );
+                        var xx = new THREE.MeshBasicMaterial( { map: mat } );
+						var object = new THREE.Mesh( geometry, xx );
+						//var material = new THREE.MeshLambertMaterial( { color: Math.Random()*0xffffff } );
+                        //var cube = new THREE.Mesh( geometry, material );
+                        
+                        object.position.x = i;
+                        object.position.z = x-offestX;
+                        object.position.y = y;
+                    
+                        scene.add(object);
+                    }
+                }
+            }*/
+            console.log("Type: "+typeof block_mat_data[1][0]);
+            function myFunction(){
+                var file = document.getElementById("myFile");
+                var actual_file = file.files[0];
+				console.log(actual_file);
+				region_data = new Region(actual_file);
+				region_data.load(function(){
+                    console.log();
+                    var total_blocks = 0;
+                    
+                    for (var y = 0; y < 16; y++){
+                        for (var x = 0; x < 16; x++){
+                            for (var z = 0; z < 16; z++){
+                                
+                                var pos = y*16*16 + z*16 + x;
+                                
+                                var section = region_data.chunks[[6,2]].sections[0].Blocks;
+                                var block_value = section[pos];
+
+                                var block_x = x;
+                                var block_z = z;
+                                var block_y = y;
+                                if (block_value !== 0){
+                                    // Basic optimizations
+                                    var above =    (y+1)*16*16 + z*16 + x;
+                                    var below =    (y-1)*16*16 + z*16 + x;
+                                    // These directions are most probably wrong, don't know if z == front or x == side...
+                                    var forward =  y*16*16 + (z+1)*16 + x;
+                                    var backword = y*16*16 + (z-1)*16 + x;
+                                    var left  =    y*16*16 + z*16 + x+1;
+                                    var right =    y*16*16 + z*16 + x-1;
+                                    // if its the edge of the chunk we want to render it no matter what (when its not air...)
+                                    var isEdge = false;
+                                    if (section[above] == undefined || section[below] == undefined){
+                                        isEdge = true;
+                                    }
+                                    if (!isEdge && x == 0 || x == 15 || z == 0 || z == 15){
+                                        isEdge = true;
+                                    }
+                                    
+                                    if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
+                                        var xx;
+                                        if (block_mat_data[block_value] != undefined && typeof block_mat_data[block_value][0] == "object") {
+                                            xx = new THREE.MeshBasicMaterial( {map: block_mat_data[block_value][0] })
+                                        }else{
+                                            xx = new THREE.MeshBasicMaterial( { map: mat } );
+                                        }
+                                        
+                                        var object = new THREE.Mesh( geometry, xx );
+                                        //var material = new THREE.MeshLambertMaterial( { color: Math.Random()*0xffffff } );
+                                        //var cube = new THREE.Mesh( geometry, material );
+                                        
+                                        object.position.x = x;
+                                        object.position.z = z-offestX;
+                                        object.position.y = y;
+                                        total_blocks++;
+                                        scene.add(object);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log("TOTAL: "+total_blocks);
+
+                });
+                
+            }
+
+            function yOffUpdate(num){
+                for (let i = scene.children.length - 1; i >= 0; i--) {
+                    if(scene.children[i].type === "Mesh")
+                        scene.remove(scene.children[i]);
+                }
+                console.log("YOFF:" +yOff);
+                yOff += num; // Current offset based on user input
+                
+                var temp = 0;
+                for (var y = 0; y < 16; y++){
+                    for (var x = 0; x < 16; x++){
+                        for (var z = 0; z < 16; z++){
+                            var yy = y;
+
+                            // BUG: When ever a new section is added it seems to add an entire 
+
+                            // Actual y position relative to the base 
+                            yy = y + yOff; 
+                            var sec = Math.ceil((yy) / 16);
+                            section_g = sec - 1;
+                            
+                            // yy has to be larger than section_g*16 as Math.ceil (-1) produces the correct section value which can be used to get the offset for the correct y position given the new section
+                            yy = yy - (section_g*16); 
+                            
+                            var pos = yy*16*16 + z*16 + x;
+
+                            var section = region_data.chunks[[6,2]].sections[section_g].Blocks;
+                            var block_value = section[pos];
+
+                            var block_x = x;
+                            var block_z = z;
+                            var block_y = y;
+                            if (block_value !== 0){
+                                // Basic optimizations
+                                var above =    (yy+1)*16*16 + z*16 + x;
+                                var below =    (yy-1)*16*16 + z*16 + x;
+                                // These directions are most probablyy wrong, don't know if z == front or x == side...
+                                var forward =  yy*16*16 + (z+1)*16 + x;
+                                var backword = yy*16*16 + (z-1)*16 + x;
+                                var left  =    yy*16*16 + z*16 + x+1;
+                                var right =    yy*16*16 + z*16 + x-1;
+                                // if its the edge of the chunk we want to render it no matter what (when its not air...)
+                                var isEdge = false;
+                                if (section[above] == undefined || section[below] == undefined){
+                                    isEdge = true;
+                                }
+                                if (!isEdge && x == 0 || x == 15 || z == 0 || z == 15){
+                                    isEdge = true;
+                                }
+                                
+                                if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
+                                    var xx;
+                                    if (block_mat_data[block_value] != undefined && typeof block_mat_data[block_value][0] == "object") {
+                                        xx = new THREE.MeshBasicMaterial( {map: block_mat_data[block_value][0] })
+                                    }else{
+                                        xx = new THREE.MeshBasicMaterial( { map: mat } );
+                                    }
+                                        
+                                    var object = new THREE.Mesh( geometry, xx );
+                                    //var material = new THREE.MeshLambertMaterial( { color: Math.Random()*0xffffff } );
+                                    //var cube = new THREE.Mesh( geometry, material );
+                                    
+                                    object.position.x = x;
+                                    object.position.z = z-offestX;
+                                    object.position.y = y;
+
+                                    scene.add(object);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                console.log("Section: " +section_g + " yOff: "+yOff);
+            }
+			/*var geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
+            var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
+            var cube = new THREE.Mesh( geometry, material );
+            cube.position.set(0, 0, -1);
+			scene.add( cube );
+            
+			camera.position.y = 5;
+            camera.position.x = 5;
+            camera.position.z = 5;*/
+			camera.position.set( -10, 10, 10 );
+            camera1.position.y = 16; // position it above by one
+            camera1.rotation.x = -1.5708; // Rotate in -90deg (Facing down)
+			controls.update();
+			
+			var animate = function () {
+				requestAnimationFrame( animate );
+                /*delta += 0.01;
+                camera.lookAt(camera1.position);
+                camera.position.x = Math.sin(delta) * 21;
+                camera.position.y = Math.cos(delta) * 21;*/
+
+				controls.update();
+                renderer1.render(scene, camera1);
+				renderer.render(scene, camera);
+                
+			};
+
+			animate();
+		</script>
+	</body>
+</html>
