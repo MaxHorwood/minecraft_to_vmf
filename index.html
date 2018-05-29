@@ -50,10 +50,10 @@
             }
 
             var yOff = 44;
-            var xOff = 0;
-            var zOff = 0;
+            var xOff = 1;
+            var zOff = 1;
             var region_data = null;
-            var section = 0;
+            
             var section_g = 0;
 
 			var scene = new THREE.Scene();
@@ -188,15 +188,16 @@
 
                 var chunk_x = 0;
                 var chunk_z = 0;
+                var chunk_y = 0;
 
                 for (var y = 0; y < 16; y++){
                     // The actual y position (from the bottom up)
                     var yy = y + yOff;
                     // Get the section based on the actual y
-                    var sec = Math.ceil((yy) / 16);
-                    section_g = sec - 1;
+                    var chunk_y_temp = Math.ceil((yy) / 16);
+                    chunk_y = chunk_y_temp - 1;
                     // yy has to be larger than section_g*16 as Math.ceil (-1) produces the correct section value which can be used to get the offset for the correct y position given the new section
-                    yy = yy - (section_g*16); 
+                    yy = yy - (chunk_y*16); 
                     yy = yy - 1;
                     for (var z = 0; z < 16; z++){
                         var zz = z + zOff;
@@ -214,7 +215,7 @@
                            
                             var pos = yy*16*16 + zz*16 + xx;
                             //console.log("ChunkX: "+chunk_x+"\nChunkZ: "+chunk_z);
-                            var section = region_data.chunks[ [chunk_x, chunk_z] ].sections[section_g].Blocks;
+                            var section = region_data.chunks[ [chunk_x, chunk_z] ].sections[chunk_y].Blocks;
                             var block_value = section[pos];
 							
                             if (block_value !== 0){
