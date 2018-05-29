@@ -34,6 +34,11 @@
         <script src="js/nbt.js"></script>
         <script>
 
+            /*
+                Props: http://minecraft-ids.grahamedgecombe.com/api Provides a JSON list of all minecraft ids etc... (and related names to the correct images)
+                (http://minecraft-ids.grahamedgecombe.com/items.json)
+            */
+
             var block_mat_data = [
                 [],
                 [loadMat('stone.png'), 'ardite', 'something'], 
@@ -82,24 +87,7 @@
 			var mat = new THREE.TextureLoader().load('blocks/grass_side_snowed.png');
 			mat.magFilter = THREE.NearestFilter;
 			mat.minFilter = THREE.LinearMipMapLinearFilter;
-            /*for (var i = 0; i < 16; i++){
-                for (var x = 0; x < 16; x++){
-                    for (var y = 0; y < 4; y++){
-                        //var object = new THREE.Mesh( geometry, new THREE.MeshLa	mbertMaterial( { color: Math.random() * 0xffffff } ) );
-                        var xx = new THREE.MeshBasicMaterial( { map: mat } );
-						var object = new THREE.Mesh( geometry, xx );
-						//var material = new THREE.MeshLambertMaterial( { color: Math.Random()*0xffffff } );
-                        //var cube = new THREE.Mesh( geometry, material );
-                        
-                        object.position.x = i;
-                        object.position.z = x-offestX;
-                        object.position.y = y;
-                    
-                        scene.add(object);
-                    }
-                }
-            }*/
-            console.log("Type: "+typeof block_mat_data[1][0]);
+            
             function myFunction(){
                 var file = document.getElementById("myFile");
                 var actual_file = file.files[0];
