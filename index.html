@@ -10,7 +10,12 @@
 	</head>
 	<body>
         <input type="file" id="myFile" multiple size="50" onchange="myFunction()">
-        <input type="button" id="myButton" onclick="yOffUpdate(1)">
+        <input type="button" value="UP" id="myButton" onclick="yOffUpdate(1, 0, 0)">
+        <input type="button" value="DWN" id="myButton" onclick="yOffUpdate(-1, 0, 0)">
+        <input type="button" value="<" id="myButton" onclick="yOffUpdate(0, 0, -1)">
+        <input type="button" value=">" id="myButton" onclick="yOffUpdate(0, 0, 1)">
+        <input type="button" value="▲" id="myButton" onclick="yOffUpdate(0, -1, 0)">
+        <input type="button" value="▼" id="myButton" onclick="yOffUpdate(0, 1, 0)">
         <canvas id="myCanvas"></canvas>
         <canvas id="myCanvas1"></canvas>
         <script src="https://threejs.org/build/three.js"></script>
@@ -44,7 +49,7 @@
                 return mat;
             }
 
-            var yOff = 0;
+            var yOff = 44;
             var xOff = 0;
             var zOff = 0;
             var region_data = null;
@@ -110,7 +115,7 @@
                                 
                                 var pos = y*16*16 + z*16 + x;
                                 
-                                var section = region_data.chunks[[6,2]].sections[0].Blocks;
+                                var section = region_data.chunks[[0,0]].sections[3].Blocks;
                                 var block_value = section[pos];
 
                                 var block_x = x;
@@ -162,57 +167,78 @@
                 
             }
 
-            function yOffUpdate(num){
+			// updates the visual display (scene) in a given direction...
+            function yOffUpdate(yDif, zDif, xDif){
+				// This function should handle ALL directions
+				// Add another 2 param for x and z
+				// Add checking so don't go to low/high.
+				// Maybe add a away to load another region file if user navigates outside of the current one?
+			
+				// Removes all mesh's (Blocks)
+				// Probably optimize by only removing the 2 rows/cols that need to be replaced then just translate the other meshs in the correct manner?
                 for (let i = scene.children.length - 1; i >= 0; i--) {
                     if(scene.children[i].type === "Mesh")
                         scene.remove(scene.children[i]);
                 }
-                console.log("YOFF:" +yOff);
-                yOff += num; // Current offset based on user input
                 
-                var temp = 0;
+                yOff += yDif; // Current offset based on user input
+                xOff += xDif;
+                zOff += zDif;
+                console.log("YOFF:" +yOff + "\nZOFF:"+zOff+"\nXOFF:"+xOff);
+
+                var chunk_x = 0;
+                var chunk_z = 0;
+
                 for (var y = 0; y < 16; y++){
-                    for (var x = 0; x < 16; x++){
-                        for (var z = 0; z < 16; z++){
-                            var yy = y;
+                    // The actual y position (from the bottom up)
+                    var yy = y + yOff;
+                    // Get the section based on the actual y
+                    var sec = Math.ceil((yy) / 16);
+                    section_g = sec - 1;
+                    // yy has to be larger than section_g*16 as Math.ceil (-1) produces the correct section value which can be used to get the offset for the correct y position given the new section
+                    yy = yy - (section_g*16); 
+                    yy = yy - 1;
+                    for (var z = 0; z < 16; z++){
+                        var zz = z + zOff;
+                        var chunk_z_temp = Math.ceil(zz / 16);
+                        chunk_z = chunk_z_temp - 1;
+                        zz = zz - (chunk_z*16);
+                        zz = zz - 1;
 
-                            // BUG: When ever a new section is added it seems to add an entire 
-
-                            // Actual y position relative to the base 
-                            yy = y + yOff; 
-                            var sec = Math.ceil((yy) / 16);
-                            section_g = sec - 1;
-                            
-                            // yy has to be larger than section_g*16 as Math.ceil (-1) produces the correct section value which can be used to get the offset for the correct y position given the new section
-                            yy = yy - (section_g*16); 
-                            
-                            var pos = yy*16*16 + z*16 + x;
-
-                            var section = region_data.chunks[[6,2]].sections[section_g].Blocks;
+                        for (var x = 0; x < 16; x++){
+                            var xx = x + xOff;
+                            var chunk_x_temp = Math.ceil(xx / 16);
+                            chunk_x = chunk_x_temp - 1;
+                            xx = xx - (chunk_x*16);
+                            xx = xx - 1;
+                           
+                            var pos = yy*16*16 + zz*16 + xx;
+                            //console.log("ChunkX: "+chunk_x+"\nChunkZ: "+chunk_z);
+                            var section = region_data.chunks[ [chunk_x, chunk_z] ].sections[section_g].Blocks;
                             var block_value = section[pos];
-
-                            var block_x = x;
-                            var block_z = z;
-                            var block_y = y;
+							
                             if (block_value !== 0){
                                 // Basic optimizations
-                                var above =    (yy+1)*16*16 + z*16 + x;
-                                var below =    (yy-1)*16*16 + z*16 + x;
+                                var above =    (yy+1)*16*16 + zz*16 + xx;
+                                var below =    (yy-1)*16*16 + zz*16 + xx;
                                 // These directions are most probablyy wrong, don't know if z == front or x == side...
-                                var forward =  yy*16*16 + (z+1)*16 + x;
-                                var backword = yy*16*16 + (z-1)*16 + x;
-                                var left  =    yy*16*16 + z*16 + x+1;
-                                var right =    yy*16*16 + z*16 + x-1;
-                                // if its the edge of the chunk we want to render it no matter what (when its not air...)
-                                var isEdge = false;
-                                if (section[above] == undefined || section[below] == undefined){
-                                    isEdge = true;
-                                }
-                                if (!isEdge && x == 0 || x == 15 || z == 0 || z == 15){
-                                    isEdge = true;
-                                }
+                                var forward =  yy*16*16 + (zz+1)*16 + xx;
+                                var backword = yy*16*16 + (zz-1)*16 + xx;
+                                var left  =    yy*16*16 + zz*16 + xx+1;
+                                var right =    yy*16*16 + zz*16 + xx-1;
                                 
-                                if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
+								
+								
+								// Check if the block is on the edge of the chunk so there are no leaks when viewing
+								// If unoptimised viewing is wanted (ALL BLOCKS RENDERED) then set isEdge = true.
+								var isEdge = false;
+                                //isEdge = true; // Uncomment for ALL blocks to be drawn
+								if (x == 0 || x == 15 || z == 0 || z == 15 || y == 0 || y == 15){
+                                    isEdge = true;
+                                }
+								// This needs to be further improved by checking the the proper section (
+								// ie: if we are on y == 15 and yy is 16 (section_g would be +1 for y==15) when we check below yy the position will be invalid as the section is incorrect due to how the chunks are loaded.
+								if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
                                     var xx;
                                     if (block_mat_data[block_value] != undefined && typeof block_mat_data[block_value][0] == "object") {
                                         xx = new THREE.MeshBasicMaterial( {map: block_mat_data[block_value][0] })
