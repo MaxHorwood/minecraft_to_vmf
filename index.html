@@ -39,12 +39,16 @@
                 (http://minecraft-ids.grahamedgecombe.com/items.json)
             */
 
+            
+            
             var block_mat_data = [
                 [],
                 [loadMat('stone.png'), 'ardite', 'something'], 
                 [loadMat('grass_side.png')], 
                 [loadMat('dirt.png'), 'second', 'thrid'],
                 [loadMat('cobblestone.png')]];
+
+            
 
             function loadMat(loc) {
                 var mat = new THREE.TextureLoader().load('blocks/'+loc);
