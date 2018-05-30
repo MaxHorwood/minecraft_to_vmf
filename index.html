@@ -39,8 +39,71 @@
                 (http://minecraft-ids.grahamedgecombe.com/items.json)
             */
 
-            
-            
+           var data = {
+               "1": {
+                   "0": {
+                       "n":"Stone",
+                       "i":[
+                           "stone"
+                       ]
+                   },
+                   "1":{
+                       "n":"Ardite",
+                       "i":[
+                           "stone_ardite"
+                       ]
+                   }
+               },
+               "2": {
+                   "0": {
+                       "n":"Grass",
+                       "i":[
+                           "grass_top",
+                           "grass_side",
+                           "grass_side",
+                           "grass_side",
+                           "grass_side",
+                           "dirt"
+                       ]
+                   }
+               }
+           }
+
+           var loaded_block_data = {}
+           var block_name_data = null;
+           var rawFile = new XMLHttpRequest();
+            rawFile.open("GET", "list_of_blocks_filename.txt", false);
+            rawFile.onreadystatechange = function ()
+            {
+                if(rawFile.readyState === 4)
+                {
+                    if(rawFile.status === 200 || rawFile.status == 0)
+                    {
+                        // Splits the txt file line-by-line
+                        var allText = rawFile.responseText.match(/[^\r\n]+/g);
+                        
+                        for (var i = 0; i < allText.length; i++){
+                            loaded_block_data[allText[i]] = loadMat(allText[i]);
+                        }
+
+                    }
+                }
+            }
+            rawFile.send(null);
+            //json
+            var rawFile1 = new XMLHttpRequest();
+            rawFile1.open("GET", "json_block_data.json", false);
+            rawFile1.onreadystatechange = function ()
+            {
+                if(rawFile1.readyState === 4)
+                {
+                    if(rawFile1.status === 200 || rawFile1.status == 0)
+                    {
+                        block_name_data = JSON.parse(rawFile1.responseText);
+                    }
+                }
+            }
+            rawFile1.send(null);
             var block_mat_data = [
                 [],
                 [loadMat('stone.png'), 'ardite', 'something'], 
@@ -80,10 +143,11 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
             renderer1.setClearColor(0x004440);
             renderer1.setSize(window.innerHeight, window.innerHeight);
-            var light = new THREE.AmbientLight(0xffffff, 0.5);
+            var light = new THREE.AmbientLight(0x555555, 1);
             scene.add(light);
 
-            var light1 = new THREE.PointLight(0xffffff, 0.5);
+            var light1 = new THREE.PointLight(0xffffff, 1.0);
+            light1.position.set( 50, 50, 50 );
             scene.add(light1);
             scene.add(cameraHelper);
             var offestX = 10;
@@ -233,10 +297,10 @@
 								// ie: if we are on y == 15 and yy is 16 (section_g would be +1 for y==15) when we check below yy the position will be invalid as the section is incorrect due to how the chunks are loaded.
 								if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
                                     var xx;
-                                    if (block_mat_data[block_value] != undefined && typeof block_mat_data[block_value][0] == "object") {
-                                        xx = new THREE.MeshBasicMaterial( {map: block_mat_data[block_value][0] })
+                                    if (block_name_data[block_value] != undefined && typeof loaded_block_data[block_name_data[block_value][0]["block_type"]+".png"] == "object") {
+                                        xx = new THREE.MeshLambertMaterial( {map: loaded_block_data[block_name_data[block_value][0]["block_type"]+".png"] })
                                     }else{
-                                        xx = new THREE.MeshBasicMaterial( { map: mat } );
+                                        xx = new THREE.MeshLambertMaterial( { map: mat } );
                                     }
                                         
                                     var object = new THREE.Mesh( geometry, xx );
