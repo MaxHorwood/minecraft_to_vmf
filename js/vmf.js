@@ -1,3 +1,4 @@
+//https://developer.valvesoftware.com/wiki/VMF_documentation
 VMF = function(filename){
     this.filename = filename + ".vmf";
     this.raw_text_data = ""; // The data to save to the vmf file
