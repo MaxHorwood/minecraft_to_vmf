@@ -50,39 +50,40 @@
                 (http://minecraft-ids.grahamedgecombe.com/items.json)
             */
 
-           var data = {
-               "1": {
-                   "0": {
-                       "n":"Stone",
-                       "i":[
-                           "stone"
-                       ]
-                   },
-                   "1":{
-                       "n":"Ardite",
-                       "i":[
-                           "stone_ardite"
-                       ]
-                   }
-               },
-               "2": {
-                   "0": {
-                       "n":"Grass",
-                       "i":[
-                           "grass_top",
-                           "grass_side",
-                           "grass_side",
-                           "grass_side",
-                           "grass_side",
-                           "dirt"
-                       ]
-                   }
-               }
-           }
-
-           var loaded_block_data = {}
-           var block_name_data = null;
-           var rawFile = new XMLHttpRequest();
+            var data = {
+                "1": {
+                    "0": {
+                        "n":"Stone",
+                        "i":[
+                            "stone"
+                        ]
+                    },
+                    "1":{
+                        "n":"Ardite",
+                        "i":[
+                            "stone_ardite"
+                        ]
+                    }
+                },
+                "2": {
+                    "0": {
+                        "n":"Grass",
+                        "i":[
+                            "grass_top",
+                            "grass_side",
+                            "grass_side",
+                            "grass_side",
+                            "grass_side",
+                            "dirt"
+                        ]
+                    }
+                }
+            }
+            
+            var loaded_block_data = {}
+            var block_name_data = null;
+            // Gets and loads all materials
+            var rawFile = new XMLHttpRequest();
             rawFile.open("GET", "list_of_blocks_filename.txt", false);
             rawFile.onreadystatechange = function ()
             {
