@@ -18,7 +18,7 @@
         <input type="button" value="▼" id="myButton" onclick="yOffUpdate(0, 1, 0)">
         <br>
         <div style="display:inline-block;">
-            <div style="width:50%;float:left;">
+            <div style="width:80%;float:left;">
             
                 <canvas style="" id="myCanvas"></canvas>
             
@@ -143,8 +143,8 @@
 			var camera = new THREE.PerspectiveCamera( 90, window.innerWidth/window.innerHeight, 3, 1000 );
             var controls = new THREE.OrbitControls( camera );
 			
-			var camera1 = new THREE.OrthographicCamera(-8, 8, 8, -8, 0.1, 1000);
-            var cameraHelper = new THREE.CameraHelper(camera1);
+			var camera1 = new THREE.OrthographicCamera(-8, 8, 8, -8, 0.1, 100);
+            //var cameraHelper = new THREE.CameraHelper(camera1);
 			
 			
             // Creates canvas that displays the content
@@ -160,7 +160,7 @@
             var light1 = new THREE.PointLight(0xffffff, 1.0);
             light1.position.set( 50, 50, 50 );
             scene.add(light1);
-            scene.add(cameraHelper);
+            //scene.add(cameraHelper);
             var offestX = 10;
             var geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
 			var mat = new THREE.TextureLoader().load('blocks/grass_side_snowed.png');
@@ -256,6 +256,10 @@
                 var chunk_x = 0;
                 var chunk_z = 0;
                 var chunk_y = 0;
+                // This is the relative position ie: within the 16x16x16 chunk
+                var chunk_x_relative = 0;
+                var chunk_z_relative = 0;
+                var chunk_y_relative = 0;
 
                 for (var y = 0; y < 16; y++){
                     // The actual y position (from the bottom up)
@@ -266,6 +270,9 @@
                     // yy has to be larger than section_g*16 as Math.ceil (-1) produces the correct section value which can be used to get the offset for the correct y position given the new section
                     yy = yy - (chunk_y*16); 
                     yy = yy - 1;
+
+                    chunk_y_relative = (yy % (chunk_y*16));
+
                     for (var z = 0; z < 16; z++){
                         var zz = z + zOff;
                         var chunk_z_temp = Math.ceil(zz / 16);
@@ -283,6 +290,9 @@
                             var pos = yy*16*16 + zz*16 + xx;
                             //console.log("ChunkX: "+chunk_x+"\nChunkZ: "+chunk_z);
                             var section = region_data.chunks[ [chunk_x, chunk_z] ].sections[chunk_y].Blocks;
+
+                            
+
                             var block_value = section[pos];
 							
                             if (block_value !== 0){
@@ -303,8 +313,27 @@
                                 //isEdge = true; // Uncomment for ALL blocks to be drawn
 								if (x == 0 || x == 15 || z == 0 || z == 15 || y == 0 || y == 15){
                                     isEdge = true;
+                                } else {
+                                    //console.log(chunk_y_relative);
+                                    if (chunk_y_relative == 0) {
+                                        
+                                        below =    (15)*16*16 + zz*16 + xx;
+                                        //console.log("0 : "+block_name_data[block_value][0]["block_type"]+".png");
+                                        // to check below the relative position the correct section of the 16 chunk is needed
+                                        var section_below = region_data.chunks[ [chunk_x, chunk_z] ].sections[chunk_y-1].Blocks;
+                                        if (section_below[below] == 0 || section[above] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
+                                            isEdge = true;
+                                        }
+                                    }else if (chunk_y_relative == 15){
+                                        above =    (0)*16*16 + zz*16 + xx;
+                                        //console.log("15: "+block_name_data[block_value][0]["block_type"]+".png");
+                                        var section_above = region_data.chunks[ [chunk_x, chunk_z] ].sections[chunk_y+1].Blocks;
+                                        if (section_above[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
+                                            isEdge = true;
+                                        }
+                                    }
                                 }
-								// This needs to be further improved by checking the the proper section (
+								// This needs to be further improved by checking the the proper section
 								// ie: if we are on y == 15 and yy is 16 (section_g would be +1 for y==15) when we check below yy the position will be invalid as the section is incorrect due to how the chunks are loaded.
 								if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
                                     var xx;
