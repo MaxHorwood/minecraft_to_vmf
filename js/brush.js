@@ -32,7 +32,7 @@ Brush.prototype.getSides = function(x, y, z) {
 Brush.prototype.getSide = function(side, material_name) {
     // This is for one side
     var id = "\"id\" \""+id+"\"";
-    var plane = "\"plane\" \"("+(this.x)+" "+(y)+" "+(z)+")\" \"("+(x)+" "+(y)+" "+(z)+")\" \"("+(x)+" "+(y)+" "+(z)+")\" ";
+    var plane = "\"plane\" \"("+(this.x)+" "+(this.y)+" "+(this.z)+")\" \"("+(this.x)+" "+(this.y)+" "+(this.z)+")\" \"("+(this.x)+" "+(this.y)+" "+(this.z)+")\" ";
     var mat = "\"material\" \"MINECRAFT/"+material_name+"\"";
     var uaxis, vaxis;
     var rot = "\"rotation\" \"0\"";
