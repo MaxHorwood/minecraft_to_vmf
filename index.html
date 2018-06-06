@@ -52,10 +52,18 @@
         <script>
             s = new VMF("test");
             // Would need to push all blocks + position etc to VMF object. blocks may also be need to be styled based on what the block is (Stair) 
-            s.addBlock(1, 5, 1, 32, 32, 32);
-            s.addBlock(1, 7, 1, 32, 32, 32);
+            s.addBlock(5, 5, 5, 32, 32, 32);
+            s.addBlock(5, 7, 5, 32, 32, 32);
+            s.addBlock(5, 9, 5, 32, 32, 32);
+            // Positions relative to size (so is out of position due to scale)
+            s.addBlock(5, 12, 5, 64, 64, 64);
             console.log(s);
-            console.log(s.world_brush_data[0].getString(1));
+            // Copy these into a vmf world{} tags and it will render 4 blocks of nodraw
+            console.log(s.world_brush_data[0].getString(31));
+            console.log(s.world_brush_data[1].getString(32));
+            console.log(s.world_brush_data[2].getString(33));
+            console.log(s.world_brush_data[3].getString(34));
+            
 
             /*
                 Props: http://minecraft-ids.grahamedgecombe.com/api Provides a JSON list of all minecraft ids etc... (and related names to the correct images)
