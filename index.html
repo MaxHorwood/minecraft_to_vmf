@@ -191,51 +191,7 @@
 				region_data = new Region(actual_file);
 				region_data.load(function(){
 
-<<<<<<< HEAD
-                                if (block_value !== 0){
-                                    // Basic optimizations
-                                    var above =    (y+1)*16*16 + z*16 + x;
-                                    var below =    (y-1)*16*16 + z*16 + x;
-                                    // These directions are most probably wrong, don't know if z == front or x == side...
-                                    var forward =  y*16*16 + (z+1)*16 + x;
-                                    var backword = y*16*16 + (z-1)*16 + x;
-                                    var left  =    y*16*16 + z*16 + x+1;
-                                    var right =    y*16*16 + z*16 + x-1;
-                                    // if its the edge of the chunk we want to render it no matter what (when its not air...)
-                                    var isEdge = true;
-                                    if (section[above] == undefined || section[below] == undefined){
-                                        isEdge = true;
-                                    }
-                                    if (!isEdge && x == 0 || x == 15 || z == 0 || z == 15){
-                                        isEdge = true;
-                                    }
-                                    
-                                    if ( isEdge || section[above] == 0 || section[below] == 0 || section[forward] == 0 || section[right] == 0 || section[backword] == 0 || section[left] == 0) {
-                                        var xx;
-                                        if (block_mat_data[block_value] != undefined && typeof block_mat_data[block_value][0] == "object") {
-                                            xx = new THREE.MeshBasicMaterial( {map: block_mat_data[block_value][0] })
-                                        }else{
-                                            xx = new THREE.MeshBasicMaterial( { map: mat } );
-                                        }
-                                        
-                                        var object = new THREE.Mesh( geometry, xx );
-                                        //var material = new THREE.MeshLambertMaterial( { color: Math.Random()*0xffffff } );
-                                        //var cube = new THREE.Mesh( geometry, material );
-                                        
-                                        object.position.x = x;
-                                        object.position.z = z-offestX;
-                                        object.position.y = y;
-                                        total_blocks++;
-                                        scene.add(object);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    console.log("TOTAL: "+total_blocks);
-=======
                     yOffUpdate(0, 0, 0);
->>>>>>> 3c51ace5aa0db6a53694f679eebabdf3c0891197
 
                 });
                 
