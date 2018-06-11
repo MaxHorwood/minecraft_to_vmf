@@ -151,9 +151,11 @@
             // Creates canvas that displays the content
 			var renderer = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas')});
             var renderer1 = new THREE.WebGLRenderer({canvas: document.getElementById('myCanvas1')});
+            // Both windows are the same width
             renderer.setClearColor(0x004440);
             renderer.setSize(window.innerWidth/2, window.innerHeight/2);
             renderer1.setClearColor(0x004440);
+            // Is a square window to show top down view of the area
             renderer1.setSize(window.innerWidth / 2, window.innerWidth /2);
             var light = new THREE.AmbientLight(0x555555, 1);
             scene.add(light);
@@ -186,9 +188,6 @@
                                 var section = region_data.chunks[[0,0]].sections[3].Blocks;
                                 var block_value = section[pos];
 
-                                var block_x = x;
-                                var block_z = z;
-                                var block_y = y;
                                 if (block_value !== 0){
                                     // Basic optimizations
                                     var above =    (y+1)*16*16 + z*16 + x;
@@ -306,7 +305,8 @@
                                 var left  =    yy*16*16 + zz*16 + xx+1;
                                 var right =    yy*16*16 + zz*16 + xx-1;
                                 
-								
+								// TODO: Change so we loop through each of the sides of a given block,
+                                // then if that face is == 0 (air) then we want to add that plane to the scene
 								
 								// Check if the block is on the edge of the chunk so there are no leaks when viewing
 								// If unoptimised viewing is wanted (ALL BLOCKS RENDERED) then set isEdge = true.
