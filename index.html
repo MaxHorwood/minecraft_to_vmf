@@ -20,7 +20,7 @@
         <div style="display:inline-block;">
             <div style="float:left;">
             
-                <canvas style="" id="myCanvas"></canvas>
+                <canvas id="myCanvas"></canvas>
             
             </div>
             <div style="float:right;">
@@ -29,6 +29,9 @@
                 
             </div>
         </div>
+        
+        <!-- 3D stuff -->
+
         <script src="js/three.js"></script>
         <script src="js/OrbitControls.js"></script>
         
@@ -40,15 +43,39 @@
         <script src="js/Chunk.js"></script>
         <script src="js/DataReader.js"></script>
         <script src="js/Region.js"></script>
-        
-
         <script src="js/nbt.js"></script>
+
+       
+        <script src="js/brush.js"></script>
+        <script src="js/vmf.js"></script>
+
         <script>
+            s = new VMF("test");
+            // Would need to push all blocks + position etc to VMF object. blocks may also be need to be styled based on what the block is (Stair) 
+            s.addBlock(5, 5, 5, 32, 32, 32);
+            s.addBlock(5, 7, 5, 32, 32, 32);
+            s.addBlock(5, 9, 5, 32, 32, 32);
+            // Positions relative to size (so is out of position due to scale)
+            s.addBlock(5, 12, 5, 64, 64, 64);
+            console.log(s);
+            // Copy these into a vmf world{} tags and it will render 4 blocks of nodraw
+            console.log(s.world_brush_data[0].getString(31));
+            console.log(s.world_brush_data[1].getString(32));
+            console.log(s.world_brush_data[2].getString(33));
+            console.log(s.world_brush_data[3].getString(34));
+            
 
             /*
                 Props: http://minecraft-ids.grahamedgecombe.com/api Provides a JSON list of all minecraft ids etc... (and related names to the correct images)
                 (http://minecraft-ids.grahamedgecombe.com/items.json)
             */
+            function loadMat(loc) {
+                var mat = new THREE.TextureLoader().load('blocks/'+loc);
+			    mat.magFilter = THREE.NearestFilter;
+			    mat.minFilter = THREE.LinearMipMapLinearFilter;
+
+                return mat;
+            }
 
             var data = {
                 "1": {
@@ -80,6 +107,9 @@
                 }
             }
             
+            
+
+
             var loaded_block_data = {}
             var block_name_data = null;
             // Gets and loads all materials
@@ -116,22 +146,6 @@
                 }
             }
             rawFile1.send(null);
-            var block_mat_data = [
-                [],
-                [loadMat('stone.png'), 'ardite', 'something'], 
-                [loadMat('grass_side.png')], 
-                [loadMat('dirt.png'), 'second', 'thrid'],
-                [loadMat('cobblestone.png')]];
-
-            
-
-            function loadMat(loc) {
-                var mat = new THREE.TextureLoader().load('blocks/'+loc);
-			    mat.magFilter = THREE.NearestFilter;
-			    mat.minFilter = THREE.LinearMipMapLinearFilter;
-
-                return mat;
-            }
 
             var yOff = 44;
             var xOff = 1;
@@ -176,18 +190,8 @@
 				console.log(actual_file);
 				region_data = new Region(actual_file);
 				region_data.load(function(){
-                    console.log();
-                    var total_blocks = 0;
-                    
-                    for (var y = 0; y < 16; y++){
-                        for (var x = 0; x < 16; x++){
-                            for (var z = 0; z < 16; z++){
-                                
-                                var pos = y*16*16 + z*16 + x;
-                                
-                                var section = region_data.chunks[[0,0]].sections[3].Blocks;
-                                var block_value = section[pos];
 
+<<<<<<< HEAD
                                 if (block_value !== 0){
                                     // Basic optimizations
                                     var above =    (y+1)*16*16 + z*16 + x;
@@ -229,6 +233,9 @@
                         }
                     }
                     console.log("TOTAL: "+total_blocks);
+=======
+                    yOffUpdate(0, 0, 0);
+>>>>>>> 3c51ace5aa0db6a53694f679eebabdf3c0891197
 
                 });
                 
@@ -251,7 +258,7 @@
                 yOff += yDif; // Current offset based on user input
                 xOff += xDif;
                 zOff += zDif;
-                console.log("YOFF:" +yOff + "\nZOFF:"+zOff+"\nXOFF:"+xOff);
+                //console.log("YOFF:" +yOff + "\nZOFF:"+zOff+"\nXOFF:"+xOff);
 
                 var chunk_x = 0;
                 var chunk_z = 0;
@@ -269,7 +276,7 @@
                     chunk_y = chunk_y_temp - 1;
                     // yy has to be larger than section_g*16 as Math.ceil (-1) produces the correct section value which can be used to get the offset for the correct y position given the new section
                     yy = yy - (chunk_y*16); 
-                    yy = yy - 1;
+                    yy = yy - 1; // Minus one for offset (Needed to be plus 1 for chunk_y_temp etc)
 
                     chunk_y_relative = (yy % (chunk_y*16));
 
@@ -278,7 +285,7 @@
                         var chunk_z_temp = Math.ceil(zz / 16);
                         chunk_z = chunk_z_temp - 1;
                         zz = zz - (chunk_z*16);
-                        zz = zz - 1;
+                        zz = zz - 1; 
 
                         for (var x = 0; x < 16; x++){
                             var xx = x + xOff;
@@ -359,7 +366,7 @@
                     }
                 }
 
-                console.log("Section: " +section_g + " yOff: "+yOff);
+                //console.log("Section: " +section_g + " yOff: "+yOff);
             }
 			/*var geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
             var material = new THREE.MeshLambertMaterial( { color: 0x00ff00 } );
@@ -388,7 +395,8 @@
                 
 			};
 
-			animate();
+            animate();
+            
 		</script>
 	</body>
 </html>
