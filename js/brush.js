@@ -7,6 +7,8 @@ Brush = function(x, y, z, width, height, length) {
     this.l = length;
     // Use nodraw as defualt.
     this.material_name = "TOOLS/TOOLSNODRAW";
+    // Add the material names. Append the directory (minecraft) later.
+    this.material_name_sides= ["", "", "", "", "", ""];
 }
 
 Brush.prototype.setMaterial = function(name) {
@@ -36,7 +38,7 @@ Brush.prototype.getSides = function(id) {
     var sides = [];
     // Loop all 6 sides of a box
     for (var i = 0; i < 6; i++) {
-        sides.push( this.getSide( (id += 1), i) );
+        sides.push( this.getSide( (id += 1), i));
     }
 
     return sides;
@@ -118,8 +120,13 @@ Brush.prototype.getSide = function(id, side) {
     }
     var plane = "\"plane\" \"("+(x1)+" "+(z1)+" "+(y1)+") ("+(x2)+" "+(z2)+" "+(y2)+") ("+(x3)+" "+(z3)+" "+(y3)+")\"";
     // Will need own directory for custom materials in hammer...
+    // Defualt nodraw
     var mat = "\"material\" \""+this.material_name+"\"";
+    if (this.material_name_sides[x] != ""){
+        mat = "\"material\" \"MINECRAFT\\"+this.material_name_sides[x]+"\"";
+    }
     
+
     var rot = "\"rotation\" \"0\"";
     var lightmapscale = "\"lightmapscale\" \"16\"";
     var smooth = "\"smoothing_groups\" \"0\"";
