@@ -316,6 +316,11 @@
                                     object.position.y = y;
 
                                     scene.add(object);
+
+                                    // Add a custom object that is an array that holds the position of the block etc.
+                                    // This array will be parsed to VMF.createVmfWorld to create the map file (.vmf)
+                                    // Will need to only parse blocks that are selected / in a region selected by user.
+
                                 }
                             }
                         }
